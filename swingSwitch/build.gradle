@@ -1,0 +1,14 @@
+version 'unspecified'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.5
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile 'junit:junit:4.11'
+    compile project(':libswitcharoo')
+}

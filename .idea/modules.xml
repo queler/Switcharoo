@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Switcharoo.iml" filepath="$PROJECT_DIR$/Switcharoo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libswitcharoo/libswitcharoo.iml" filepath="$PROJECT_DIR$/libswitcharoo/libswitcharoo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/swingSwitch/swingSwitch.iml" filepath="$PROJECT_DIR$/swingSwitch/swingSwitch.iml" />
+    </modules>
+  </component>
+</project>

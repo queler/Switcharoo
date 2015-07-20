@@ -1,0 +1,58 @@
+   public class CommandWorker extends SwingWorker<Void, Void> {
+
+        /**
+         * Computes a result, or throws an exception if unable to do so.
+         * <p/>
+         * <p/>
+         * Note that this method is executed only once.
+         * <p/>
+         * <p/>
+         * Note: this method is executed in a background thread.
+         *
+         * @return the computed result
+         * @throws Exception if unable to compute a result
+         */
+        private Runnable command;
+
+        public CommandWorker(Runnable command, OP op) {
+            this.command = command;
+            this.op = op;
+        }
+
+
+        /**
+         * Computes a result, or throws an exception if unable to do so.
+         * <p/>
+         * <p/>
+         * Note that this method is executed only once.
+         * <p/>
+         * <p/>
+         * Note: this method is executed in a background thread.
+         *
+         * @return the computed result
+         * @throws Exception if unable to compute a result
+         */
+        @Override
+        protected Void doInBackground() throws Exception {
+            System.out.println("in swingworker for " + op + ", running command");
+            command.run();
+            return null;
+        }
+
+        /**
+         * Executed on the <i>Event Dispatch Thread</i> after the {@code doInBackground}
+         * method is finished. The default
+         * implementation does nothing. Subclasses may override this method to
+         * perform completion actions on the <i>Event Dispatch Thread</i>. Note
+         * that you can query status inside the implementation of this method to
+         * determine the result of this task or whether this task has been cancelled.
+         *
+         * @see #doInBackground
+         * @see #isCancelled()
+         * @see #get
+         */
+        @Override
+        protected void done() {
+            onAction();
+        }
+    }
