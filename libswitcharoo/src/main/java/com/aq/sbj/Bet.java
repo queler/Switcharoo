@@ -13,7 +13,7 @@ public  class Bet extends InstantObservable{
         empty, Illegal, Funds, Done, Unchangable
 
     }
-
+    private int index;
     public class BadBetException extends RuntimeException {
         /**
          *
@@ -34,7 +34,12 @@ public  class Bet extends InstantObservable{
 
     public BankRoll Bank;
 
-    public Bet(int bet, BankRoll bank) {
+    public Bet(BankRoll bank, int bet) {
+        this(bank, bet, -1);
+    }
+
+    public Bet(BankRoll bank, int bet, int index) {
+        this.index = index;
         value = bet;
         Bank = bank;
         // ReadyToDelete = false;

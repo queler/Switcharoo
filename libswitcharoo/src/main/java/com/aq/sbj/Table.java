@@ -1,6 +1,8 @@
 package com.aq.sbj;
 
 import java.util.EnumSet;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -9,53 +11,101 @@ import java.util.logging.Logger;
 public class Table extends InstantObservable{
      public static final int MAX_SPLITS = 4;
     public static final int NO_OF_HANDS = MAX_SPLITS * 2;
-    private final int DEFAULT_BET = 10;
+    public static final Level LEVEL = Level.FINEST;
+    public static final ConsoleHandler CONSOLE_HANDLER = new ConsoleHandler();
+    static Logger tracer;
 
+    static {
+        tracer = Logger.getLogger(Table.class.getPackage().toString());
+        tracer.setLevel(Table.LEVEL);
+        CONSOLE_HANDLER.setLevel(Table.LEVEL);
+        tracer.addHandler(CONSOLE_HANDLER);
+    }
+
+    private final int DEFAULT_BET = 10;
     public int activeHandIndex;
     public Bet[] bets;
     public EnumSet<OP> ops;
-    private Runnable inBetweenCards;
-
-    public boolean isDealersTurn() {
-        return dealersTurn;
-    }
-
-    private boolean dealersTurn;
-
-
     public BankRoll bankRoll;
     public Hand dealer;
     public Hand[] hands;
-
-    public EnumSet<OP> getOps() {
-        return ops;
-    }
-
-    public void setOps(EnumSet<OP> ops) {
-        this.ops = ops;
-        setChanged();
-        notifyObservers(TableChange.OPs);
-    }
-    Logger tracer= Logger.getLogger(this.getClass().getPackage().toString());
-
-    public Table() {
+    int lastBetAmount;
+    private Runnable inBetweenCards;
+    private boolean dealersTurn;
+    public Table(String[] args) {
 
         bankRoll=new BankRoll(200,"Bank");
         hands = new Hand[NO_OF_HANDS];
-        Deck deck = new RandomDeck();
+        Deck deck;
+        if (args.length>=1 && args[0].contentEquals("fours")) {
+          deck=new FourDeck();
+        } else {
+            deck = new RandomDeck();
+        }
         for (int i = 0; i < NO_OF_HANDS; i++) {
             hands[i]=( new Hand(deck));
         }
         bets = new Bet[NO_OF_HANDS];
         dealer=new Hand(deck);
 
-        setOps(OP.NEW_HAND);
+        setOps(OP.NEW_HAND());
         inBetweenCards = null;
     }
 
+    public static String CardsString(Hand hand, String separator, boolean obscure)
+    {
+        StringBuilder sb=new StringBuilder((2+separator.length())* Hand.INIT_HAND_SIZE);
+        for (int i = 0; i < hand.size()-1; i++) {
+            if (i==1 && obscure){
+                sb.append("XX").append(separator);
+            }
 
+            else
+            {
+                sb.append(hand.get(i).toString()).append( separator);
+            }
+        }
+        if (hand.size()==2 && obscure) {
+                sb.append("XX");
+        } else {
+            sb.append(hand.get(hand.size() - 1));
+        }
+        return sb.toString();
+    }
 
-    int lastBetAmount;
+    public static String HandToString(Hand hand, boolean obscure) {
+        if (hand.size()>0) {
+            return ((hand.isSoft() && !obscure)? "SOFT":"    ")+ " "+((obscure)?("  "):(String.format("%1$2s",hand.getTotal()))+ " : ")+ CardsString(hand," ", obscure);
+        } else {
+            return "";
+        }
+    }
+
+    private static  boolean isTen(Card card)
+    {
+        int rank=card.getRank();
+        return ((rank>=10) && (rank<=13));
+    }
+
+    public boolean isDealersTurn() {
+        return dealersTurn;
+    }
+
+    public void setDealersTurn(boolean dealersTurn) {
+        this.dealersTurn = dealersTurn;
+        setChanged();
+        notifyObservers();
+    }
+
+    public EnumSet<OP> cloneOps() {
+        return ops.clone();
+    }
+
+    public void setOps(EnumSet<OP> ops) {
+        this.ops=ops;
+        setChanged();
+        notifyObservers(TableChange.OPs);
+    }
 
     public void startGame(BankRoll bankRoll, int bet) {
         for (int i = 0; i < NO_OF_HANDS; i++) {
@@ -64,15 +114,15 @@ public class Table extends InstantObservable{
         dealer.newHand();
         setDealersTurn(false);
         //bankRoll.Bet(bet);
-        bets[0] = new Bet(bet, bankRoll);
-        bets[MAX_SPLITS] = new Bet(bet, bankRoll);
+        bets[0] = new Bet(bankRoll, bet, 0);
+        bets[MAX_SPLITS] = new Bet(bankRoll, bet, MAX_SPLITS);
         hands[0].deal();
         hands[MAX_SPLITS].deal();
         dealer.deal();
         hands[0].deal();
         hands[MAX_SPLITS].deal();
         dealer.deal();
-        setOps(OP.AFTER_DEAL);
+        setOps(OP.AFTER_DEAL());
         Card one=dealer.get(0);
         Card two=dealer.get(1);
         if( (one.getRank()==1 && isTen(two))
@@ -81,13 +131,13 @@ public class Table extends InstantObservable{
         {//bj process
             setDealersTurn(true);
             forAllActive(new DoToOne() {
-                void doToOne(int i) {
+                public void doToOne(int i) {
                     bets[i].Loser();
                     bets[i] = null;
                     //hands[i].newHand();
                 }
             });
-            setOps(OP.NEW_HAND);
+            setOps(OP.NEW_HAND());
         }
         else
         {//no bj
@@ -131,47 +181,18 @@ public class Table extends InstantObservable{
         activateNextHand();
     }
 
-
     public void hit() {
         hands[activeHandIndex].deal();
         if (hands[activeHandIndex].getTotal()>21)
         {bust();}
         else
         {
-            setOps(OP.PLAY);
+            setOps(OP.PLAY());
             setChanged();
             notifyObservers();
         }
     }
 
-    public static String CardsString(Hand hand, String separator, boolean obscure)
-    {
-        StringBuilder sb=new StringBuilder((2+separator.length())* Hand.INIT_HAND_SIZE);
-        for (int i = 0; i < hand.size()-1; i++) {
-            if (i==1 && obscure){
-                sb.append("XX").append(separator);
-            }
-
-            else
-            {
-                sb.append(hand.get(i).toString()).append( separator);
-            }
-        }
-        if (hand.size()==2 && obscure) {
-                sb.append("XX");
-        } else {
-            sb.append(hand.get(hand.size() - 1));
-        }
-        return sb.toString();
-    }
-
-    public static String HandToString(Hand hand, boolean obscure) {
-        if (hand.size()>0) {
-            return ((hand.isSoft() && !obscure)? "SOFT":"    ")+ " "+((obscure)?("  "):(String.format("%1$2s",hand.getTotal()))+ " : ")+ CardsString(hand," ", obscure);
-        } else {
-            return "";
-        }
-    }
     public String textDisplay() {
         StringBuilder out = new StringBuilder();
         out.append(bankRoll.toString()).append("\n");
@@ -187,14 +208,6 @@ public class Table extends InstantObservable{
             }
         }
         return out.toString();
-    }
-
-
-
-    private static  boolean isTen(Card card)
-    {
-        int rank=card.getRank();
-        return ((rank>=10) && (rank<=13));
     }
 
     public void stand() {
@@ -223,7 +236,7 @@ public class Table extends InstantObservable{
                 {
                     hands[activeHandIndex].deal();
                 }
-                setOps(OP.PRE_HIT);
+                setOps(OP.PRE_HIT());
                 splitCheckAndSet();
                 break;
             }
@@ -235,11 +248,18 @@ public class Table extends InstantObservable{
     }
 
     private void splitCheckAndSet() {
-        if (hands[activeHandIndex].get(0).getRank()==hands[activeHandIndex].get(1).getRank())
+        tracer.finest("in splitCheck");
+        Card one = hands[activeHandIndex].get(0);
+        Card two = hands[activeHandIndex].get(1);
+        if (
+                (one.getRank()== two.getRank())
+                ||
+                        ( isTen(one) && isTen(two)  )
+                )
         {
-            if (activeHandIndex+1!=NO_OF_HANDS || activeHandIndex+1!=MAX_SPLITS)
+            if (bets[activeHandIndex / MAX_SPLITS*MAX_SPLITS + MAX_SPLITS-1]==null )
             {
-                EnumSet<OP> newOps=getOps();
+                EnumSet<OP> newOps= cloneOps();
                 newOps.add(OP.split);
                 setOps(newOps);
             }
@@ -253,7 +273,7 @@ public class Table extends InstantObservable{
     private void StartDealerProcessing() {
 
         setDealersTurn(true);
-        setOps(OP.NONE_OF);
+        setOps(OP.NONE_OF());
         setChanged();
         notifyObservers(TableChange.DealersTurn);
 
@@ -288,7 +308,7 @@ public class Table extends InstantObservable{
                 notifyObservers(TableChange.DealerDealt);
             }
         }
-        setOps(OP.NEW_HAND);
+        setOps(OP.NEW_HAND());
         setChanged();
         notifyObservers();
     }
@@ -296,7 +316,7 @@ public class Table extends InstantObservable{
     private void standAndEval() {
         forAllActive(new DoToOne() {
             @Override
-            void doToOne(int i) {
+            public void doToOne(int i) {
                 if (dealer.getTotal()==hands[i].getTotal())
                 {bets[i].Push();}
                 else if (dealer.getTotal()>hands[i].getTotal())
@@ -313,11 +333,10 @@ public class Table extends InstantObservable{
         });
     }
 
-
     private void allPush() {
         forAllActive(new DoToOne() {
             @Override
-            void doToOne(int i) {
+            public void doToOne(int i) {
                 bets[i].Push();
                 bets[i]=null;
             }
@@ -327,20 +346,13 @@ public class Table extends InstantObservable{
     private void allWin() {
         forAllActive(new DoToOne() {
             @Override
-            void doToOne(int i) {
-                bets[i].Winner(1,1);
-                bets[i]=null;
+            public void doToOne(int i) {
+                bets[i].Winner(1, 1);
+                bets[i] = null;
 
             }
         });
     }
-
-    public void setDealersTurn(boolean dealersTurn) {
-        this.dealersTurn = dealersTurn;
-        setChanged();
-        notifyObservers();
-    }
-
 
     public void swap() {
         Hand.Swap(hands[0], hands[MAX_SPLITS]);
@@ -352,11 +364,22 @@ public class Table extends InstantObservable{
      * that a split is possible
      */
     public void split() {
-        bets[activeHandIndex+1]=new Bet(bets[activeHandIndex].getValue(),bankRoll);
+        tracer.finest("in split");
+        int newHandIndex=activeHandIndex;
+        do {
+            newHandIndex++;
+            if (newHandIndex==MAX_SPLITS || newHandIndex ==NO_OF_HANDS)
+            {
+                throw new IllegalStateException("shouldn't be able to split here");
+            }
+        } while (bets[newHandIndex]!=null);
+        bets[(newHandIndex)]=new Bet(bankRoll, bets[activeHandIndex].getValue(), newHandIndex);
 
         Card two=hands[activeHandIndex].remove(1);
-        hands[activeHandIndex+1].add(two);
+        hands[(newHandIndex)].add(two);
         hands[activeHandIndex].deal();
+        setOps(OP.PRE_HIT());
+        splitCheckAndSet();
     }
 
     /**
@@ -366,8 +389,8 @@ public class Table extends InstantObservable{
          doubleDown();
     }
 
-    public abstract class DoToOne {
-        abstract void  doToOne(int i);
+    public  interface DoToOne {
+         void  doToOne(int i);
     }
 }
 

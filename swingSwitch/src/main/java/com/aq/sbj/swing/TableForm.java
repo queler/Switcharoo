@@ -14,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.util.EnumSet;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 /**
@@ -49,10 +50,15 @@ public class TableForm {
     private Table table;
     private HandView[] hands;
     private int activeHandViewIndex;
-    Logger tracer = Logger.getLogger(this.getClass().getPackage().toString());
+    Logger tracer;
 
     public TableForm() {
-        table = new Table();
+        this(null);
+    }
+
+    public TableForm(String[] args) {
+        tracer = Logger.getLogger(Table.class.getPackage().toString());
+        table = new Table(args);
         //linkObs();
         $$$setupUI$$$();
         handDealer.setDealer(true);
@@ -116,8 +122,8 @@ public class TableForm {
     public static void main(String[] args) {
 
         JFrame frame = new JFrame("TableForm");
-        frame.setContentPane(new TableForm().MainPanel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setContentPane(new TableForm(args).MainPanel);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
     }
@@ -144,11 +150,11 @@ public class TableForm {
                     @Override
                     public void run() {
 
-                        if (TableForm.this.table.getOps().equals(OP.NEW_HAND)) {
-                            table.startGame(table.bankRoll, ((Integer) ((SpinnerNumberModel) betValue.getModel()).getValue()));
+                        if (TableForm.this.table.cloneOps().equals(OP.NEW_HAND())) {
+                            table.startGame(table.bankRoll, ((Integer) (betValue.getModel()).getValue()));
                             TableForm.this.onAction();
 
-                        } else if (TableForm.this.table.getOps().contains(OP.hit)) {
+                        } else if (TableForm.this.table.cloneOps().contains(OP.hit)) {
                             table.hit();
                             TableForm.this.onAction();
 
@@ -168,6 +174,7 @@ public class TableForm {
                 return new Runnable() {
                     @Override
                     public void run() {
+                        tracer.finest("in split's Runnable, about to call split");
                         table.split();
                     }
                 };
@@ -182,7 +189,7 @@ public class TableForm {
         bankField.setText(String.valueOf(table.bankRoll.Money()));
         //ops
 
-        setButtons(table.getOps());
+        setButtons(table.cloneOps());
         //hands
         for (int i = 0; i < 8; i++) {
             hands[i].update(table.hands[i], table);
@@ -394,7 +401,7 @@ public class TableForm {
         @Override
         public void actionPerformed(ActionEvent e) {
             tracer.finest("I'm in actionPerformed for " + ((JButton) e.getSource()).getText() + ", setting buttons empty");
-            setButtons(OP.NONE_OF);
+            setButtons(OP.NONE_OF());
 
             tracer.finest("about to execute worker");
             SwingWorker<Void, Void> swingWorker = new SwingWorker<Void, Void>() {
@@ -407,6 +414,14 @@ public class TableForm {
 
                 @Override
                 protected void done() {
+                    try {
+                        get();
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    } catch (ExecutionException e1) {
+                        e1.printStackTrace();
+                        throw new RuntimeException(e1.getCause());
+                    }
                     TableForm.this.onAction();
                 }
             };
