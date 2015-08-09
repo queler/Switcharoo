@@ -17,10 +17,10 @@ public class RandomDeck implements Deck{
         Suit suit;
         switch (random.nextInt(3))
         {
-            case 0: suit=Suit.HEART;break;
-            case 1: suit=Suit.SPADE;break;
-            case 2: suit=Suit.CLUB;break;
-            case 3: suit=Suit.DIAMOND;break;
+            case 0: suit=Suit.H;break;
+            case 1: suit=Suit.S;break;
+            case 2: suit=Suit.C;break;
+            case 3: suit=Suit.D;break;
             default: throw new IllegalStateException("can't program");
         }
         return new Card(rank,suit);

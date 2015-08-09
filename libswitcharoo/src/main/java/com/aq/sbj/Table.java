@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 public class Table extends InstantObservable{
      public static final int MAX_SPLITS = 4;
     public static final int NO_OF_HANDS = MAX_SPLITS * 2;
-    public static final Level LEVEL = Level.FINEST;
+    public static final Level LEVEL = Level.INFO;
     public static final ConsoleHandler CONSOLE_HANDLER = new ConsoleHandler();
     static Logger tracer;
 
@@ -32,16 +32,16 @@ public class Table extends InstantObservable{
     int lastBetAmount;
     private Runnable inBetweenCards;
     private boolean dealersTurn;
-    public Table(String[] args) {
+
+    public Table() {
+        this(new RandomDeck());
+    }
+
+    public Table(Deck deck) {
 
         bankRoll=new BankRoll(200,"Bank");
         hands = new Hand[NO_OF_HANDS];
-        Deck deck;
-        if (args.length>=1 && args[0].contentEquals("fours")) {
-          deck=new FourDeck();
-        } else {
-            deck = new RandomDeck();
-        }
+
         for (int i = 0; i < NO_OF_HANDS; i++) {
             hands[i]=( new Hand(deck));
         }
@@ -110,6 +110,7 @@ public class Table extends InstantObservable{
     public void startGame(BankRoll bankRoll, int bet) {
         for (int i = 0; i < NO_OF_HANDS; i++) {
             hands[i].newHand();
+            bets[i]=null;
         }
         dealer.newHand();
         setDealersTurn(false);
@@ -123,27 +124,65 @@ public class Table extends InstantObservable{
         hands[MAX_SPLITS].deal();
         dealer.deal();
         setOps(OP.AFTER_DEAL());
-        Card one=dealer.get(0);
-        Card two=dealer.get(1);
-        if( (one.getRank()==1 && isTen(two))
-                || (isTen(one) && two.getRank()==1)
-                )
+        if(isBj(dealer)                )
         {//bj process
             setDealersTurn(true);
             forAllActive(new DoToOne() {
                 public void doToOne(int i) {
-                    bets[i].Loser();
-                    bets[i] = null;
-                    //hands[i].newHand();
+                    if (!isBj(hands[i])) {
+                        bets[i].Loser();
+
+                    } else {
+                        bets[i].Push();
+
+                    }
+
                 }
             });
             setOps(OP.NEW_HAND());
         }
         else
         {//no bj
-            activeHandIndex = 0;
-            //TODO: do i check for a natural here?  have to check when i switch maxbets as well
-            splitCheckAndSet();
+            boolean isOneBJ=isBj(hands[0]);
+            boolean isTwoBJ=isBj(hands[MAX_SPLITS]);
+            if (isOneBJ)
+            {
+
+                bets[0].Winner(1, 1);
+
+                if (isTwoBJ){
+                // both BJ
+
+                    bets[MAX_SPLITS].Winner(1, 1);
+
+                    StartDealerProcessing();
+                }
+                else
+                {// only first
+                    activateNextHand();
+                }
+            }
+            else
+            {
+                if (isTwoBJ)
+                {//only second
+
+                    bets[MAX_SPLITS].Winner(1, 1);
+
+                    setOps(OP.PRE_HIT());
+                }
+                activeHandIndex = 0;
+
+                splitCheckAndSet();
+
+            }
+
+
+
+
+
+
+
 
 
         }
@@ -151,9 +190,16 @@ public class Table extends InstantObservable{
         notifyObservers();
     }
 
+    public boolean isBj(Hand hand) {
+        Card one= hand.get(0);
+        Card two= hand.get(1);
+        return (one.getRank() == 1 && isTen(two))
+                || (isTen(one) && two.getRank() == 1);
+    }
+
     private void forAllActive(DoToOne o) {
         for (int i = 0; i < NO_OF_HANDS; i++) {
-            if (bets[i]!=null)
+            if (!isNoBetAt(i))
             {//active hand
                 o.doToOne(i);
             }
@@ -177,7 +223,7 @@ public class Table extends InstantObservable{
 
     private void bust() {
         bets[activeHandIndex].Loser();
-        bets[activeHandIndex]=null;
+
         activateNextHand();
     }
 
@@ -227,7 +273,7 @@ public class Table extends InstantObservable{
                     StartDealerProcessing();
                     break;
                 }
-            else if (hands[activeHandIndex].size()==0)
+            else if (isNoBetAt(activeHandIndex))
             {
             }
             else
@@ -247,6 +293,10 @@ public class Table extends InstantObservable{
 
     }
 
+    private boolean isNoBetAt(int index) {
+        return bets[index]==null || bets[index].isDone();
+    }
+
     private void splitCheckAndSet() {
         tracer.finest("in splitCheck");
         Card one = hands[activeHandIndex].get(0);
@@ -257,7 +307,7 @@ public class Table extends InstantObservable{
                         ( isTen(one) && isTen(two)  )
                 )
         {
-            if (bets[activeHandIndex / MAX_SPLITS*MAX_SPLITS + MAX_SPLITS-1]==null )
+            if (isNoBetAt(activeHandIndex / MAX_SPLITS*MAX_SPLITS + MAX_SPLITS-1) )
             {
                 EnumSet<OP> newOps= cloneOps();
                 newOps.add(OP.split);
@@ -318,16 +368,20 @@ public class Table extends InstantObservable{
             @Override
             public void doToOne(int i) {
                 if (dealer.getTotal()==hands[i].getTotal())
-                {bets[i].Push();}
+                {
+                    bets[i].Push();
+
+                }
                 else if (dealer.getTotal()>hands[i].getTotal())
                 {
                     bets[i].Loser();
-                    bets[i]=null;
+
                 }
                 else
                 {
-                    bets[i].Winner(1,1);
-                    bets[i]=null;
+
+                    bets[i].Winner(1, 1);
+
                 }
             }
         });
@@ -338,7 +392,7 @@ public class Table extends InstantObservable{
             @Override
             public void doToOne(int i) {
                 bets[i].Push();
-                bets[i]=null;
+
             }
         });
     }
@@ -347,8 +401,8 @@ public class Table extends InstantObservable{
         forAllActive(new DoToOne() {
             @Override
             public void doToOne(int i) {
+
                 bets[i].Winner(1, 1);
-                bets[i] = null;
 
             }
         });

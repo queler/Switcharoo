@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.aq.sbj.swing.TableForm">
   <grid id="27dc6" binding="MainPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="20" y="20" width="500" height="400"/>
+      <xy x="20" y="20" width="515" height="400"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -84,21 +84,9 @@
             </constraints>
             <properties>
               <background color="-4278273"/>
-              <font style="1"/>
+              <font name="Courier New"/>
+              <text value=""/>
             </properties>
-          </component>
-          <hspacer id="50919">
-            <constraints>
-              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-          </hspacer>
-          <component id="29a37" class="com.aq.sbj.swing.HandView" binding="hand0">
-            <constraints>
-              <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
-              </grid>
-            </constraints>
-            <properties/>
           </component>
           <component id="4eaa2" class="com.aq.sbj.swing.HandView" binding="hand1">
             <constraints>
@@ -107,6 +95,7 @@
               </grid>
             </constraints>
             <properties>
+              <font name="Courier New"/>
               <text value=""/>
             </properties>
           </component>
@@ -117,6 +106,7 @@
               </grid>
             </constraints>
             <properties>
+              <font name="Courier New"/>
               <text value=""/>
             </properties>
           </component>
@@ -126,7 +116,9 @@
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
-            <properties/>
+            <properties>
+              <font name="Courier New"/>
+            </properties>
           </component>
           <component id="286bc" class="com.aq.sbj.swing.HandView" binding="hand4">
             <constraints>
@@ -134,7 +126,9 @@
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
-            <properties/>
+            <properties>
+              <font name="Courier New"/>
+            </properties>
           </component>
           <component id="46c9" class="com.aq.sbj.swing.HandView" binding="hand5">
             <constraints>
@@ -142,7 +136,9 @@
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
-            <properties/>
+            <properties>
+              <font name="Courier New"/>
+            </properties>
           </component>
           <component id="ceaa" class="com.aq.sbj.swing.HandView" binding="hand6">
             <constraints>
@@ -150,7 +146,9 @@
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
-            <properties/>
+            <properties>
+              <font name="Courier New"/>
+            </properties>
           </component>
           <component id="699f1" class="com.aq.sbj.swing.HandView" binding="hand7">
             <constraints>
@@ -158,16 +156,113 @@
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
-            <properties/>
+            <properties>
+              <font name="Courier New"/>
+            </properties>
           </component>
-          <vspacer id="47a2f">
+          <component id="29a37" class="com.aq.sbj.swing.HandView" binding="hand0">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="150" height="-1"/>
+              </grid>
+            </constraints>
+            <properties>
+              <font name="Courier New"/>
+            </properties>
+          </component>
+          <vspacer id="165b5">
             <constraints>
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
             </constraints>
           </vspacer>
+          <component id="2c9a8" class="javax.swing.JTextArea" binding="bet0">
+            <constraints>
+              <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <columns value="0"/>
+              <editable value="false"/>
+              <text value="100 + 100"/>
+            </properties>
+          </component>
+          <component id="96c47" class="javax.swing.JTextArea" binding="bet1">
+            <constraints>
+              <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <columns value="0"/>
+              <editable value="false"/>
+              <text value="100 + 100"/>
+            </properties>
+          </component>
+          <component id="d47e" class="javax.swing.JTextArea" binding="bet2">
+            <constraints>
+              <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <columns value="0"/>
+              <editable value="false"/>
+              <text value="100 + 100"/>
+            </properties>
+          </component>
+          <component id="71ad7" class="javax.swing.JTextArea" binding="bet3">
+            <constraints>
+              <grid row="5" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <columns value="0"/>
+              <editable value="false"/>
+              <text value="100 + 100"/>
+            </properties>
+          </component>
+          <component id="2ac0a" class="javax.swing.JTextArea" binding="bet4">
+            <constraints>
+              <grid row="6" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <columns value="0"/>
+              <editable value="false"/>
+              <text value="100 + 100"/>
+            </properties>
+          </component>
+          <component id="25369" class="javax.swing.JTextArea" binding="bet5">
+            <constraints>
+              <grid row="7" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <columns value="0"/>
+              <editable value="false"/>
+              <text value="100 + 100"/>
+            </properties>
+          </component>
+          <component id="ac2f8" class="javax.swing.JTextArea" binding="bet6">
+            <constraints>
+              <grid row="8" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <columns value="0"/>
+              <editable value="false"/>
+              <text value="100 + 100"/>
+            </properties>
+          </component>
+          <component id="17e9b" class="javax.swing.JTextArea" binding="bet7">
+            <constraints>
+              <grid row="9" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <columns value="0"/>
+              <editable value="false"/>
+              <text value="100 + 100"/>
+            </properties>
+          </component>
+          <hspacer id="c47aa">
+            <constraints>
+              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+          </hspacer>
         </children>
       </grid>
-      <grid id="a045" binding="ButtonsPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+      <grid id="a045" binding="ButtonsPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
         <constraints border-constraint="South"/>
         <properties/>
         <border type="none"/>

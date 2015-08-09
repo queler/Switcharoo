@@ -11,4 +11,6 @@ repositories {
 dependencies {
     testCompile 'junit:junit:4.11'
     compile project(':libswitcharoo')
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+
 }

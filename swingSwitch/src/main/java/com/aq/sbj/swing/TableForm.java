@@ -1,8 +1,6 @@
 package com.aq.sbj.swing;
 
-import com.aq.sbj.OP;
-import com.aq.sbj.Table;
-import com.aq.sbj.TableChange;
+import com.aq.sbj.*;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
@@ -23,6 +21,7 @@ import java.util.logging.Logger;
 
 
 public class TableForm {
+    private final JTextArea[] handBets;
     private JButton swapButton;
     private JPanel ButtonsPanel;
     private JButton ddButton;
@@ -47,18 +46,23 @@ public class TableForm {
     private JPanel topPanel;
     private JPanel bankPanel;
     private JPanel CenterPanel;
+    private JTextArea bet0;
+    private JTextArea bet1;
+    private JTextArea bet2;
+    private JTextArea bet3;
+    private JTextArea bet4;
+    private JTextArea bet5;
+    private JTextArea bet6;
+    private JTextArea bet7;
     private Table table;
-    private HandView[] hands;
+    private final HandView[] hands;
     private int activeHandViewIndex;
     Logger tracer;
 
-    public TableForm() {
-        this(null);
-    }
 
-    public TableForm(String[] args) {
+    public TableForm(Deck deck) {
         tracer = Logger.getLogger(Table.class.getPackage().toString());
-        table = new Table(args);
+        table = new Table(deck);
         //linkObs();
         $$$setupUI$$$();
         handDealer.setDealer(true);
@@ -114,6 +118,7 @@ public class TableForm {
             }
         });
         hands = new HandView[]{hand0, hand1, hand2, hand3, hand4, hand5, hand6, hand7};
+        handBets = new JTextArea[]{bet0, bet1, bet2, bet3, bet4, bet5, bet6, bet7};
         betValue.setValue(10);
 
         onAction();
@@ -122,7 +127,13 @@ public class TableForm {
     public static void main(String[] args) {
 
         JFrame frame = new JFrame("TableForm");
-        frame.setContentPane(new TableForm(args).MainPanel);
+        Deck deck = null;
+        if (args != null && args.length > 0 && args[0].contentEquals("debug")) {
+            deck = new SwingDebugDeck();
+        } else {
+            deck = new RandomDeck();
+        }
+        frame.setContentPane(new TableForm(deck).MainPanel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
@@ -193,9 +204,32 @@ public class TableForm {
         //hands
         for (int i = 0; i < 8; i++) {
             hands[i].update(table.hands[i], table);
+            Bet bet = table.bets[i];
+            if (bet == null) {
+                handBets[i].setText("");
+            } else {
+                String betValue = String.valueOf(bet.getValue());
+                switch (bet.getState()) {
+
+                    case ACTIVE:
+                        handBets[i].setText(betValue);
+                        break;
+                    case WON:
+                        handBets[i].setText(betValue + " + " + String.valueOf(bet.winnings));
+                        break;
+                    case LOST:
+                        handBets[i].setText("*" + betValue + "*");
+                        break;
+                    case PUSHED:
+                        handBets[i].setText(betValue + " + 0");
+                        break;
+                }
+            }
         }
         handDealer.update(table.dealer, table);
+
         setActiveHandViewIndex(table.activeHandIndex);
+
     }
 
 
@@ -318,32 +352,81 @@ public class TableForm {
         MainPanel.add(CenterPanel, BorderLayout.CENTER);
         handDealer = new HandView();
         handDealer.setBackground(new Color(-4278273));
-        handDealer.setFont(new Font(handDealer.getFont().getName(), Font.BOLD, handDealer.getFont().getSize()));
+        handDealer.setFont(new Font("Courier New", handDealer.getFont().getStyle(), handDealer.getFont().getSize()));
+        handDealer.setText("");
         CenterPanel.add(handDealer, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        final Spacer spacer1 = new Spacer();
-        CenterPanel.add(spacer1, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
-        hand0 = new HandView();
-        CenterPanel.add(hand0, new GridConstraints(2, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         hand1 = new HandView();
+        hand1.setFont(new Font("Courier New", hand1.getFont().getStyle(), hand1.getFont().getSize()));
         hand1.setText("");
         CenterPanel.add(hand1, new GridConstraints(3, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         hand2 = new HandView();
+        hand2.setFont(new Font("Courier New", hand2.getFont().getStyle(), hand2.getFont().getSize()));
         hand2.setText("");
         CenterPanel.add(hand2, new GridConstraints(4, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         hand3 = new HandView();
+        hand3.setFont(new Font("Courier New", hand3.getFont().getStyle(), hand3.getFont().getSize()));
         CenterPanel.add(hand3, new GridConstraints(5, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         hand4 = new HandView();
+        hand4.setFont(new Font("Courier New", hand4.getFont().getStyle(), hand4.getFont().getSize()));
         CenterPanel.add(hand4, new GridConstraints(6, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         hand5 = new HandView();
+        hand5.setFont(new Font("Courier New", hand5.getFont().getStyle(), hand5.getFont().getSize()));
         CenterPanel.add(hand5, new GridConstraints(7, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         hand6 = new HandView();
+        hand6.setFont(new Font("Courier New", hand6.getFont().getStyle(), hand6.getFont().getSize()));
         CenterPanel.add(hand6, new GridConstraints(8, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         hand7 = new HandView();
+        hand7.setFont(new Font("Courier New", hand7.getFont().getStyle(), hand7.getFont().getSize()));
         CenterPanel.add(hand7, new GridConstraints(9, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        hand0 = new HandView();
+        hand0.setFont(new Font("Courier New", hand0.getFont().getStyle(), hand0.getFont().getSize()));
+        CenterPanel.add(hand0, new GridConstraints(2, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        final Spacer spacer1 = new Spacer();
+        CenterPanel.add(spacer1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        bet0 = new JTextArea();
+        bet0.setColumns(0);
+        bet0.setEditable(false);
+        bet0.setText("100 + 100");
+        CenterPanel.add(bet0, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        bet1 = new JTextArea();
+        bet1.setColumns(0);
+        bet1.setEditable(false);
+        bet1.setText("100 + 100");
+        CenterPanel.add(bet1, new GridConstraints(3, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        bet2 = new JTextArea();
+        bet2.setColumns(0);
+        bet2.setEditable(false);
+        bet2.setText("100 + 100");
+        CenterPanel.add(bet2, new GridConstraints(4, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        bet3 = new JTextArea();
+        bet3.setColumns(0);
+        bet3.setEditable(false);
+        bet3.setText("100 + 100");
+        CenterPanel.add(bet3, new GridConstraints(5, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        bet4 = new JTextArea();
+        bet4.setColumns(0);
+        bet4.setEditable(false);
+        bet4.setText("100 + 100");
+        CenterPanel.add(bet4, new GridConstraints(6, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        bet5 = new JTextArea();
+        bet5.setColumns(0);
+        bet5.setEditable(false);
+        bet5.setText("100 + 100");
+        CenterPanel.add(bet5, new GridConstraints(7, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        bet6 = new JTextArea();
+        bet6.setColumns(0);
+        bet6.setEditable(false);
+        bet6.setText("100 + 100");
+        CenterPanel.add(bet6, new GridConstraints(8, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        bet7 = new JTextArea();
+        bet7.setColumns(0);
+        bet7.setEditable(false);
+        bet7.setText("100 + 100");
+        CenterPanel.add(bet7, new GridConstraints(9, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final Spacer spacer2 = new Spacer();
-        CenterPanel.add(spacer2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        CenterPanel.add(spacer2, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         ButtonsPanel = new JPanel();
-        ButtonsPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        ButtonsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
         MainPanel.add(ButtonsPanel, BorderLayout.SOUTH);
         swapButton = new JButton();
         swapButton.setText("1 Swap");

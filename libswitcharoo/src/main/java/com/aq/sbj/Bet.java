@@ -7,7 +7,16 @@ import java.util.logging.Logger;
  */
 public  class Bet extends InstantObservable{
 
-    private boolean done;
+    private BetState state;
+    public int winnings;
+
+    public boolean isDone() {
+        return state!=BetState.ACTIVE;
+    }
+
+    public BetState getState() {
+        return state;
+    }
 
     public enum BadBetEnum {
         empty, Illegal, Funds, Done, Unchangable
@@ -27,7 +36,7 @@ public  class Bet extends InstantObservable{
         }
 
     }
-    Logger tracer= Logger.getLogger(this.getClass().getPackage().toString());
+    Logger tracer= Logger.getLogger(Table.class.getPackage().toString());
 
 
     private int value;
@@ -49,7 +58,7 @@ public  class Bet extends InstantObservable{
         } else {
             throw new BadBetException(BadBetEnum.Illegal);
         }
-        done = false;
+        state = BetState.ACTIVE;
     }
 
     /**
@@ -67,12 +76,12 @@ public  class Bet extends InstantObservable{
 
         throwIfDone();
         int oldBank = Bank.Money();
-        int winnings = getValue() * leftOdds / rightOdds;
+        winnings = getValue() * leftOdds / rightOdds;
         //tracer.info("The bet for $%3$ of %2$ has won $%3$+$%4$=%5$", this.DisplayStringType(), this.Bank.BankName, this.getValue(), winnings, getValue() + winnings));
         Bank.Win(winnings + getValue());
         tracer.info(Bank.BankName+" went from $"+oldBank+"->"+Bank.Money());
         //this.DeleteMe(); ;  //the table will handle deletions.
-        setDone();
+        setDone(BetState.WON);
 
     }
 
@@ -81,14 +90,14 @@ public  class Bet extends InstantObservable{
     }
 
     private void throwIfDone() {
-        if (done)
+        if (isDone())
         {
             throw new BadBetException(BadBetEnum.Done);
         }
     }
 
-    private void setDone() {
-        done=true;
+    private void setDone(BetState state) {
+        this.state =state;
     }
 
     /**
@@ -97,7 +106,8 @@ public  class Bet extends InstantObservable{
     public void Loser()
     {
         tracer.info("The "+this.DisplayStringType()+"bet of $"+this.Bank.BankName+" for "+getValue()+" has lost");
-        setDone();
+        winnings=0;
+        setDone(BetState.LOST);
     }
 
 
@@ -105,6 +115,8 @@ public  class Bet extends InstantObservable{
     public void Push()
     {
         Bank.Win(getValue());
+        winnings=0;
+        setDone(BetState.PUSHED);
 
         tracer.info("The bet for "+getValue()+" of "+Bank.BankName+" is given back (push)");
     }
@@ -172,4 +184,10 @@ public  class Bet extends InstantObservable{
     }
 
 
+    /**
+     * Created by amq102 on 8/8/2015.
+     */
+    public static enum BetState {
+        ACTIVE,WON, LOST, PUSHED
+    }
 }
